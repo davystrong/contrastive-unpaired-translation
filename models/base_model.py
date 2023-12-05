@@ -221,6 +221,9 @@ class BaseModel(ABC):
                 # patch InstanceNorm checkpoints prior to 0.4
                 # for key in list(state_dict.keys()):  # need to copy keys here because we mutate in loop
                 #    self.__patch_instance_norm_state_dict(state_dict, net, key.split('.'))
+
+                state_dict = dict(zip(net.state_dict().keys(), state_dict.values()))
+
                 net.load_state_dict(state_dict)
 
     def print_networks(self, verbose):
