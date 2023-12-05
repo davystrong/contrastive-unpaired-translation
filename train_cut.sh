@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH --job-name=train_cut
-#SBATCH --output="/users/40390351/contrastive-unpaired-translation/output.txt"
+#SBATCH --output="/users/40390351/contrastive-unpaired-translation/train_cut_output.txt"
 #SBATCH --mail-user=darmstrong34@qub.ac.uk
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
-#SBATCH --partition=gpu
+#SBATCH --partition=k2-gpu
 #SBATCH --gres=gpu:v100:1
 #SBATCH --exclude=gpu114
 #SBATCH --mem-per-cpu=4G
