@@ -40,7 +40,10 @@ if __name__ == '__main__':
                 torch.cuda.synchronize()
             optimize_start_time = time.time()
             if epoch == opt.epoch_count and i == 0:
-                model.data_dependent_initialize(data)
+                try:
+                    model.data_dependent_initialize(data)
+                except TypeError:
+                    model.data_dependent_initialize()
                 model.setup(opt)               # regular setup: load and print networks; create schedulers
                 model.parallelize()
             model.set_input(data)  # unpack data from dataset and apply preprocessing

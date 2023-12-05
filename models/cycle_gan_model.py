@@ -140,10 +140,10 @@ class CycleGANModel(BaseModel):
         loss_D_fake = self.criterionGAN(pred_fake, False)
         # Combined loss and calculate gradients
         loss_D = (loss_D_real + loss_D_fake) * 0.5
-        if self.opt.amp:
+        try:
             with amp.scale_loss(loss_D, self.optimizer_D) as scaled_loss:
                 scaled_loss.backward()
-        else:
+        except Exception:
             loss_D.backward()
         return loss_D
 
@@ -184,10 +184,10 @@ class CycleGANModel(BaseModel):
         self.loss_cycle_B = self.criterionCycle(self.rec_B, self.real_B) * lambda_B
         # combined loss and calculate gradients
         self.loss_G = self.loss_G_A + self.loss_G_B + self.loss_cycle_A + self.loss_cycle_B + self.loss_idt_A + self.loss_idt_B
-        if self.opt.amp:
+        try:
             with amp.scale_loss(self.loss_G, self.optimizer_G) as scaled_loss:
                 scaled_loss.backward()
-        else:
+        except Exception:
             self.loss_G.backward()
 
     def data_dependent_initialize(self):
