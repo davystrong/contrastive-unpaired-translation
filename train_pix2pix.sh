@@ -19,4 +19,4 @@ ee=/mnt/scratch2/users/40390351
 # cd $dd/Experiments/23-2-2
 cd "$dd/contrastive-unpaired-translation"
 ln -fs "$dd/ml_notebook/Experiments/Shared/23-11-23.sif" environment.sif
-apptainer exec --nv --bind $dd:$dd --bind $ee:$ee ./environment.sif bash -c 'python3 -m pip install -r requirements.txt && python3 train.py --dataroot ./datasets/mouse --model pix2pix --name mouse_pix2pix --dataset_mode unaligned --lambda_L1 0'
+apptainer exec --nv --bind $dd:$dd --bind $ee:$ee ./environment.sif bash -c 'python3 -m pip install -r requirements.txt && python3 train.py --dataroot ./datasets/mouse --model pix2pix --name mouse_pix2pix --dataset_mode unaligned --lambda_L1 0 --display_id -1'
