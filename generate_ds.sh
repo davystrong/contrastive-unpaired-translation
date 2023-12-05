@@ -17,5 +17,5 @@ dd=/users/40390351
 ee=/mnt/scratch2/users/40390351
 # cd $dd/Experiments/23-2-2
 cd "$dd/contrastive-unpaired-translation"
-ln -f "$dd/ml_notebook/Experiments/Shared/23-11-23.sif" environment.sif
+ln -fs "$dd/ml_notebook/Experiments/Shared/23-11-23.sif" environment.sif
 apptainer exec --nv --bind $dd:$dd --bind $ee:$ee ./environment.sif python3 generate_ds.py
