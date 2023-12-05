@@ -6,10 +6,10 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --partition=k2-gpu
-#SBATCH --gres=gpu:v100:1
+#SBATCH --gres=gpu:1g.10gb:1
 #SBATCH --exclude=gpu114
 #SBATCH --mem-per-cpu=4G
-#SBATCH --time=10:00:00
+#SBATCH --time=24:00:00
 
 module load apps/apptainer/1.1.2
 # module load nvidia-cuda
