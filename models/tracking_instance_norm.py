@@ -3,9 +3,12 @@ import torch.nn.functional as F
 
 class _TrackingInstanceNorm(instancenorm._InstanceNorm):
     def _apply_instance_norm(self, input):
+        F.instance_norm(
+            input, self.running_mean, self.running_var, self.weight, self.bias,
+            True, self.momentum, self.eps)
         return F.instance_norm(
             input, self.running_mean, self.running_var, self.weight, self.bias,
-            self.training or not self.track_running_stats, self.momentum, self.eps)
+            False, self.momentum, self.eps)
 
 class TrackingInstanceNorm2d(_TrackingInstanceNorm):
     r"""Applies Instance Normalization over a 4D input (a mini-batch of 2D inputs
