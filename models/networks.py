@@ -937,9 +937,9 @@ class ResnetGenerator(nn.Module):
         super(ResnetGenerator, self).__init__()
         self.opt = opt
         if type(norm_layer) == functools.partial:
-            use_bias = norm_layer.func == nn.InstanceNorm2d
+            use_bias = (norm_layer.func == nn.InstanceNorm2d) or (norm_layer.func == tracking_instance_norm.TrackingInstanceNorm2d)
         else:
-            use_bias = norm_layer == nn.InstanceNorm2d
+            use_bias = (norm_layer == nn.InstanceNorm2d) or (norm_layer == tracking_instance_norm.TrackingInstanceNorm2d)
 
         model = [nn.ReflectionPad2d(3),
                  nn.Conv2d(input_nc, ngf, kernel_size=7, padding=0, bias=use_bias),
@@ -1032,9 +1032,9 @@ class ResnetDecoder(nn.Module):
         assert(n_blocks >= 0)
         super(ResnetDecoder, self).__init__()
         if type(norm_layer) == functools.partial:
-            use_bias = norm_layer.func == nn.InstanceNorm2d
+            use_bias = (norm_layer.func == nn.InstanceNorm2d) or (norm_layer.func == tracking_instance_norm.TrackingInstanceNorm2d)
         else:
-            use_bias = norm_layer == nn.InstanceNorm2d
+            use_bias = (norm_layer == nn.InstanceNorm2d) or (norm_layer == tracking_instance_norm.TrackingInstanceNorm2d)
         model = []
         n_downsampling = 2
         mult = 2 ** n_downsampling
@@ -1089,9 +1089,9 @@ class ResnetEncoder(nn.Module):
         assert(n_blocks >= 0)
         super(ResnetEncoder, self).__init__()
         if type(norm_layer) == functools.partial:
-            use_bias = norm_layer.func == nn.InstanceNorm2d
+            use_bias = (norm_layer.func == nn.InstanceNorm2d) or (norm_layer.func == tracking_instance_norm.TrackingInstanceNorm2d)
         else:
-            use_bias = norm_layer == nn.InstanceNorm2d
+            use_bias = (norm_layer == nn.InstanceNorm2d) or (norm_layer == tracking_instance_norm.TrackingInstanceNorm2d)
 
         model = [nn.ReflectionPad2d(3),
                  nn.Conv2d(input_nc, ngf, kernel_size=7, padding=0, bias=use_bias),
@@ -1238,9 +1238,9 @@ class UnetSkipConnectionBlock(nn.Module):
         super(UnetSkipConnectionBlock, self).__init__()
         self.outermost = outermost
         if type(norm_layer) == functools.partial:
-            use_bias = norm_layer.func == nn.InstanceNorm2d
+            use_bias = (norm_layer.func == nn.InstanceNorm2d) or (norm_layer.func == tracking_instance_norm.TrackingInstanceNorm2d)
         else:
-            use_bias = norm_layer == nn.InstanceNorm2d
+            use_bias = (norm_layer == nn.InstanceNorm2d) or (norm_layer == tracking_instance_norm.TrackingInstanceNorm2d)
         if input_nc is None:
             input_nc = outer_nc
         downconv = nn.Conv2d(input_nc, inner_nc, kernel_size=4,
@@ -1299,9 +1299,9 @@ class NLayerDiscriminator(nn.Module):
         """
         super(NLayerDiscriminator, self).__init__()
         if type(norm_layer) == functools.partial:  # no need to use bias as BatchNorm2d has affine parameters
-            use_bias = norm_layer.func == nn.InstanceNorm2d
+            use_bias = (norm_layer.func == nn.InstanceNorm2d) or (norm_layer.func == tracking_instance_norm.TrackingInstanceNorm2d)
         else:
-            use_bias = norm_layer == nn.InstanceNorm2d
+            use_bias = (norm_layer == nn.InstanceNorm2d) or (norm_layer == tracking_instance_norm.TrackingInstanceNorm2d)
 
         kw = 4
         padw = 1
@@ -1356,9 +1356,9 @@ class PixelDiscriminator(nn.Module):
         """
         super(PixelDiscriminator, self).__init__()
         if type(norm_layer) == functools.partial:  # no need to use bias as BatchNorm2d has affine parameters
-            use_bias = norm_layer.func == nn.InstanceNorm2d
+            use_bias = (norm_layer.func == nn.InstanceNorm2d) or (norm_layer.func == tracking_instance_norm.TrackingInstanceNorm2d)
         else:
-            use_bias = norm_layer == nn.InstanceNorm2d
+            use_bias = (norm_layer == nn.InstanceNorm2d) or (norm_layer == tracking_instance_norm.TrackingInstanceNorm2d)
 
         self.net = [
             nn.Conv2d(input_nc, ndf, kernel_size=1, stride=1, padding=0),
