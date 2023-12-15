@@ -14,7 +14,7 @@ class _TrackingInstanceNorm(instancenorm._InstanceNorm):
         ratio = self.num_batches_tracked / (500*200)
         ratio = torch.clamp(ratio, 0, 1)
 
-        return ratio * sample_stats + (1 - ratio) * pop_stats
+        return (1 - ratio) * sample_stats + ratio * pop_stats
 
 class TrackingInstanceNorm2d(_TrackingInstanceNorm):
     r"""Applies Instance Normalization over a 4D input (a mini-batch of 2D inputs
