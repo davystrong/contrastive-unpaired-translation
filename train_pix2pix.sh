@@ -5,7 +5,7 @@
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
-#SBATCH --partition=k2-gpu
+#SBATCH --partition=k2-gpu,gpu
 #SBATCH --gres=gpu:v100:1
 #SBATCH --mem-per-cpu=4G
 #SBATCH --time=24:00:00
