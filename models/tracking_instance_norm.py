@@ -5,12 +5,9 @@ import torch
 
 
 class _TrackingInstanceNorm(instancenorm._InstanceNorm):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, population_stats_ratio: float = 1, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.training:
-            self.register_buffer("running_ratio_mean", torch.ones(()))
-            self.running_ratio_mean: Optional[torch.Tensor]
-        # self.register_buffer("running_var", torch.ones(self.num_features))
+        self.population_stats_ratio = population_stats_ratio
 
     def _apply_instance_norm(self, input):
         pop_stats = F.instance_norm(
@@ -25,7 +22,6 @@ class _TrackingInstanceNorm(instancenorm._InstanceNorm):
         )
 
         if self.training:
-            mm = self.running_mean.clone().detach()
             sample_stats = F.instance_norm(
                 input,
                 self.running_mean,
@@ -36,22 +32,19 @@ class _TrackingInstanceNorm(instancenorm._InstanceNorm):
                 self.momentum,
                 self.eps,
             )
-            ratio_mean = (
-                (
-                    (self.running_mean - mm + self.eps)
-                    / (self.running_mean + self.eps)
-                    / self.momentum
-                )
-                .abs()
-                .mean()
+            return (
+                self.population_stats_ratio * pop_stats
+                + (1 - self.population_stats_ratio) * sample_stats
             )
-            self.running_ratio_mean.mul_(1 - self.momentum**2).add_(  # type: ignore[has-type]
-                self.momentum**2 * ratio_mean
-            ).clamp_(0, 100)
-            ratio = torch.clamp(self.running_ratio_mean, 0, 1)
-            return (1 - ratio) * pop_stats + ratio * sample_stats
         else:
             return pop_stats
+
+    def forward(self, input):
+        if self.training and self.track_running_stats:
+            # TODO: if statement only here to tell the jit to skip emitting this when it is None
+            if self.num_batches_tracked is not None:  # type: ignore[has-type]
+                self.num_batches_tracked.add_(1)  # type: ignore[has-type]
+        return super().forward(input)
 
 
 class TrackingInstanceNorm2d(_TrackingInstanceNorm):

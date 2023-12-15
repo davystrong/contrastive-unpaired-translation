@@ -4,7 +4,11 @@ from options.train_options import TrainOptions
 from data import create_dataset
 from models import create_model
 from util.visualizer import Visualizer
+from models import tracking_instance_norm
 
+def update_stats_ratio(module: torch.nn.Module, ratio: float) -> None:
+    if isinstance(module, tracking_instance_norm.TrackingInstanceNorm2d):
+        module.population_stats_ratio = ratio
 
 if __name__ == '__main__':
     opt = TrainOptions().parse()   # get training options
@@ -26,6 +30,8 @@ if __name__ == '__main__':
         iter_data_time = time.time()    # timer for data loading per iteration
         epoch_iter = 0                  # the number of training iterations in current epoch, reset to 0 every epoch
         visualizer.reset()              # reset the visualizer: make sure it saves the results to HTML at least once every epoch
+
+        model.netG.apply(lambda module: update_stats_ratio(module, max(0, min(1, (epoch - 200) / 100))))
 
         dataset.set_epoch(epoch)
         for i, data in enumerate(dataset):  # inner loop within one epoch
