@@ -1,14 +1,20 @@
 from torch.nn.modules import instancenorm
 import torch.nn.functional as F
+import torch
 
 class _TrackingInstanceNorm(instancenorm._InstanceNorm):
     def _apply_instance_norm(self, input):
-        F.instance_norm(
+        sample_stats = F.instance_norm(
             input, self.running_mean, self.running_var, self.weight, self.bias,
             True, self.momentum, self.eps)
-        return F.instance_norm(
+        pop_stats = F.instance_norm(
             input, self.running_mean, self.running_var, self.weight, self.bias,
             False, self.momentum, self.eps)
+        
+        ratio = self.num_batches_tracked / (500*200)
+        ratio = torch.clamp(ratio, 0, 1)
+
+        return ratio * sample_stats + (1 - ratio) * pop_stats
 
 class TrackingInstanceNorm2d(_TrackingInstanceNorm):
     r"""Applies Instance Normalization over a 4D input (a mini-batch of 2D inputs
