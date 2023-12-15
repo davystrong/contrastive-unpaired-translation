@@ -2,19 +2,46 @@ from torch.nn.modules import instancenorm
 import torch.nn.functional as F
 import torch
 
+
 class _TrackingInstanceNorm(instancenorm._InstanceNorm):
     def _apply_instance_norm(self, input):
-        sample_stats = F.instance_norm(
-            input, self.running_mean, self.running_var, self.weight, self.bias,
-            True, self.momentum, self.eps)
         pop_stats = F.instance_norm(
-            input, self.running_mean, self.running_var, self.weight, self.bias,
-            False, self.momentum, self.eps)
-        
-        ratio = self.num_batches_tracked / (500*200)
-        ratio = torch.clamp(ratio, 0, 1)
+            input,
+            self.running_mean,
+            self.running_var,
+            self.weight,
+            self.bias,
+            False,
+            self.momentum,
+            self.eps,
+        )
 
-        return (1 - ratio) * sample_stats + ratio * pop_stats
+        if self.training:
+            sample_stats = F.instance_norm(
+                input,
+                self.running_mean,
+                self.running_var,
+                self.weight,
+                self.bias,
+                True,
+                self.momentum,
+                self.eps,
+            )
+
+            ratio = self.num_batches_tracked / (500 * 200)
+            ratio = torch.clamp(ratio, 0, 1)
+
+            return (1 - ratio) * sample_stats + ratio * pop_stats
+        else:
+            return pop_stats
+
+    def forward(self, input):
+        if self.training and self.track_running_stats:
+            # TODO: if statement only here to tell the jit to skip emitting this when it is None
+            if self.num_batches_tracked is not None:  # type: ignore[has-type]
+                self.num_batches_tracked.add_(1)  # type: ignore[has-type]
+        return super().forward(input)
+
 
 class TrackingInstanceNorm2d(_TrackingInstanceNorm):
     r"""Applies Instance Normalization over a 4D input (a mini-batch of 2D inputs
@@ -89,4 +116,4 @@ class TrackingInstanceNorm2d(_TrackingInstanceNorm):
 
     def _check_input_dim(self, input):
         if input.dim() not in (3, 4):
-            raise ValueError(f'expected 3D or 4D input (got {input.dim()}D input)')
+            raise ValueError(f"expected 3D or 4D input (got {input.dim()}D input)")
