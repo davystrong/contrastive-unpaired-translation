@@ -45,8 +45,8 @@ class _TrackingInstanceNorm(instancenorm._InstanceNorm):
                 .abs()
                 .mean()
             )
-            self.running_ratio_mean.mul_(1 - self.momentum).add_(  # type: ignore[has-type]
-                self.momentum * ratio_mean
+            self.running_ratio_mean.mul_(1 - self.momentum**2).add_(  # type: ignore[has-type]
+                self.momentum**2 * ratio_mean
             ).clamp_(0, 100)
             ratio = torch.clamp(self.running_ratio_mean, 0, 1)
             return (1 - ratio) * pop_stats + ratio * sample_stats
