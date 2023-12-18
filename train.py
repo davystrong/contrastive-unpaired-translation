@@ -31,7 +31,7 @@ if __name__ == '__main__':
         epoch_iter = 0                  # the number of training iterations in current epoch, reset to 0 every epoch
         visualizer.reset()              # reset the visualizer: make sure it saves the results to HTML at least once every epoch
 
-        model.netG.apply(lambda module: update_stats_ratio(module, max(0, min(1, (epoch - 200) / 100))))
+        model.netG.apply(lambda module: update_stats_ratio(module, max(0, min(1, (epoch - opt.n_epochs) / (opt.n_epochs_decay - 100)))))
 
         dataset.set_epoch(epoch)
         for i, data in enumerate(dataset):  # inner loop within one epoch
