@@ -5,12 +5,17 @@ from data import create_dataset
 from models import create_model
 from util.visualizer import Visualizer
 from models import tracking_instance_norm
+from multiprocessing import Process, Pipe
+import math
 
 def update_stats_ratio(module: torch.nn.Module, ratio: float) -> None:
     if isinstance(module, tracking_instance_norm.TrackingInstanceNorm2d):
         module.population_stats_ratio = ratio
 
-if __name__ == '__main__':
+class NaNLossException(Exception):
+    pass
+
+def run():
     opt = TrainOptions().parse()   # get training options
     dataset = create_dataset(opt)  # create a dataset given opt.dataset_mode and other options
     dataset_size = len(dataset)    # get the number of images in the dataset.
@@ -65,6 +70,9 @@ if __name__ == '__main__':
 
             if total_iters % opt.print_freq == 0:    # print training losses and save logging information to the disk
                 losses = model.get_current_losses()
+                for v in losses.values():
+                    if math.isnan(v):
+                        raise NaNLossException()
                 visualizer.print_current_losses(epoch, epoch_iter, losses, optimize_time, t_data)
                 if opt.display_id is None or opt.display_id > 0:
                     visualizer.plot_current_losses(epoch, float(epoch_iter) / dataset_size, losses)
@@ -84,3 +92,29 @@ if __name__ == '__main__':
 
         print('End of epoch %d / %d \t Time Taken: %d sec' % (epoch, opt.n_epochs + opt.n_epochs_decay, time.time() - epoch_start_time))
         model.update_learning_rate()                     # update learning rates at the end of every epoch.
+
+class JobProcess(Process):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.m_conn, self.p_conn = Pipe(duplex=False)
+
+    def run(self):
+        try:
+            super().run()
+        except NaNLossException as e:
+            self.p_conn.send(e)
+
+    def join(self, *args, **kwargs):
+        super().join(*args, **kwargs)
+        if self.m_conn.poll():
+            raise self.m_conn.recv()
+
+if __name__ == '__main__':
+    while True:
+        try:
+            p = JobProcess(target=run)
+            p.start()
+            p.join()
+            break
+        except NaNLossException:
+            print('NaN loss detected, restarting...')
