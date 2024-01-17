@@ -104,7 +104,7 @@ class BaseModel(ABC):
         for name in self.model_names:
             if isinstance(name, str):
                 net = getattr(self, 'net' + name)
-                setattr(self, 'net' + name, torch.nn.parallel.DistributedDataParallel(net, self.opt.gpu_ids))
+                setattr(self, 'net' + name, torch.nn.DataParallel(net, self.opt.gpu_ids))
 
     def data_dependent_initialize(self, data):
         pass
@@ -209,7 +209,7 @@ class BaseModel(ABC):
 
                 load_path = os.path.join(load_dir, load_filename)
                 net = getattr(self, 'net' + name)
-                if isinstance(net, torch.nn.parallel.DistributedDataParallel):
+                if isinstance(net, torch.nn.DataParallel):
                     net = net.module
                 print('loading the model from %s' % load_path)
                 # if you are using PyTorch newer than 0.4 (e.g., built from
